@@ -3,8 +3,6 @@ FROM --platform=$BUILDPLATFORM public.ecr.aws/amazonlinux/amazonlinux:2023 as in
 
 # Use ARG for platform-specific AWS CLI installer
 ARG TARGETARCH
-# Get latest version of AWS CLI v2
-ENV AWS_CLI_VERSION="2.16.17"
 
 # Set download URL based on architecture
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
@@ -16,7 +14,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     fi \
   && yum update -y \
   && yum install -y curl unzip \
-  && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWS_CLI_VERSION}.zip" -o awscliv2.zip \
+  && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o awscliv2.zip \
   && unzip awscliv2.zip \
   && ./aws/install --bin-dir /aws-cli-bin/
 
