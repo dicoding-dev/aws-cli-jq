@@ -86,8 +86,8 @@ jobs:
           platforms: linux/${{ matrix.arch }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.buildcache.outputs.ghcr }}
-          cache-to: type=registry,ref=${{ steps.buildcache.outputs.ghcr }},mode=max
+          #cache-from: type=registry,ref=${{ steps.buildcache.outputs.ghcr }}
+          #cache-to: type=registry,ref=${{ steps.buildcache.outputs.ghcr }},mode=max
 
   create-and-push-manifest:
     needs: build-and-push
