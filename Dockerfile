@@ -1,21 +1,33 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:2 as installer
-ARG VERSION="2.22.5"
-RUN yum update -y \
+# syntax=docker/dockerfile:1.4
+FROM --platform=$BUILDPLATFORM public.ecr.aws/amazonlinux/amazonlinux:2023 as installer
+
+# Use ARG for platform-specific AWS CLI installer
+ARG TARGETARCH
+# Get latest version of AWS CLI v2
+ENV AWS_CLI_VERSION="2.16.17"
+
+# Set download URL based on architecture
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+      ARCH="x86_64"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+      ARCH="aarch64"; \
+    else \
+      echo "Unsupported architecture: $TARGETARCH" && exit 1; \
+    fi \
+  && yum update -y \
   && yum install -y curl unzip \
-  && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${VERSION}.zip" -o awscliv2.zip \
+  && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}-${AWS_CLI_VERSION}.zip" -o awscliv2.zip \
   && unzip awscliv2.zip \
-  # The --bin-dir is specified so that we can copy the
-  # entire bin directory from the installer stage into
-  # into /usr/local/bin of the final stage without
-  # accidentally copying over any other executables that
-  # may be present in /usr/local/bin of the installer stage.
   && ./aws/install --bin-dir /aws-cli-bin/
 
-FROM public.ecr.aws/amazonlinux/amazonlinux:2
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023
+
 RUN yum update -y \
   && yum install -y less groff jq \
   && yum clean all
+
 COPY --from=installer /usr/local/aws-cli/ /usr/local/aws-cli/
 COPY --from=installer /aws-cli-bin/ /usr/local/bin/
+
 WORKDIR /aws
 ENTRYPOINT ["/usr/local/bin/aws"]
