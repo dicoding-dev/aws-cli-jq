@@ -5,15 +5,15 @@ FROM --platform=$BUILDPLATFORM public.ecr.aws/amazonlinux/amazonlinux:2023 as in
 ARG TARGETARCH
 
 # Set download URL based on architecture
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
+RUN yum update -y --allowerasing \
+  && yum install -y curl unzip --allowerasing \
+  && if [ "$TARGETARCH" = "amd64" ]; then \
       ARCH="x86_64"; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
       ARCH="aarch64"; \
     else \
       echo "Unsupported architecture: $TARGETARCH" && exit 1; \
     fi \
-  && yum update -y \
-  && yum install -y curl unzip \
   && curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o awscliv2.zip \
   && unzip awscliv2.zip \
   && ./aws/install --bin-dir /aws-cli-bin/
